@@ -44,6 +44,7 @@ public class SocialMediaController {
         app.get("/messages/{message_id}",this::getMessageHandler);
         app.delete("/messages/{message_id}", this::deleteMessagebyid);
         app.patch("/messages/{message_id}",this::updateMessageHandler);
+        app.get("/accounts/{account_id}/messages",this::getMessagebyUserHandler);
         return app;
     }
 
@@ -52,21 +53,38 @@ public class SocialMediaController {
      * @param context The Javalin Context object manages information about both the HTTP request and response.
      * 
      */
+    private void getMessagebyUserHandler(Context context) throws JsonProcessingException{
+        int account_id = Integer.parseInt(context.pathParam("account_id"));
+        List<Message> messages = messageService.messageofUser(account_id);
+      
+        context.json(messages);
+    }
+
+
+
 
     private void updateMessageHandler(Context context) throws JsonProcessingException{
         int message_id = Integer.parseInt(context.pathParam("message_id"));
         ObjectMapper mapper = new ObjectMapper();
-        String m = mapper.writeValueAsString(context.body());
-        Message newMessage = messageService.getMessagebyid(message_id);
+        Message message = mapper.readValue(context.body(), Message.class);
+        String m = message.getMessage_text();
+        
+        Message nullcheck = messageService.getMessagebyid(message_id);
+        Message new_message = messageService.updateMessage(message_id, m);
 
-        if (newMessage == null || m.length() > 255 || m.isEmpty()){
+        if (nullcheck == null || m == "" || m.length() > 255){
             context.status(400);
         }
         else{
-            messageService.updateMessage(message_id, m);
-            context.json(messageService.getMessagebyid(message_id));
+           // Message message = messageService.updateMessage(message_id, m);
+            
+            context.json(mapper.writeValueAsString(new_message));
          }
      }
+
+
+
+
 
 
     private void deleteMessagebyid(Context context) throws JsonProcessingException{

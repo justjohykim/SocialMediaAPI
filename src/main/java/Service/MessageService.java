@@ -45,7 +45,10 @@ public class MessageService {
         messageDAO.updateMessage(id, text);
         return messageDAO.getMessagebyid(id);
         
-        
+    }
+
+    public List<Message> messageofUser(int id){
+        return messageDAO.messageofUser(id);
     }
 
 }
